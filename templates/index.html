@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Verification System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gradient: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-weight: 600;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .upload-container {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .upload-container:hover {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 0.8rem 1.8rem;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .file-name {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .result-container {
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+        }
+
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .result-icon {
+            font-size: 1.5rem;
+            margin-right: 0.8rem;
+        }
+
+        .original {
+            background: linear-gradient(135deg, rgba(76, 201, 240, 0.1) 0%, rgba(76, 201, 240, 0.2) 100%);
+            border-left: 4px solid var(--success);
+        }
+
+        .fake {
+            background: linear-gradient(135deg, rgba(247, 37, 133, 0.1) 0%, rgba(247, 37, 133, 0.2) 100%);
+            border-left: 4px solid var(--danger);
+        }
+
+        .error {
+            background: linear-gradient(135deg, rgba(253, 230, 138, 0.1) 0%, rgba(252, 211, 77, 0.2) 100%);
+            border-left: 4px solid #f59e0b;
+        }
+
+        .result-title {
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .original .result-title {
+            color: var(--success);
+        }
+
+        .fake .result-title {
+            color: var(--danger);
+        }
+
+        .error .result-title {
+            color: #f59e0b;
+        }
+
+        .result-reason {
+            margin-bottom: 1rem;
+            color: #4b5563;
+        }
+
+        .text-fields {
+            margin-top: 1.5rem;
+        }
+
+        .text-fields h3 {
+            font-size: 1rem;
+            color: #374151;
+            margin-bottom: 0.8rem;
+            font-weight: 500;
+        }
+
+        .text-field {
+            background: white;
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            font-size: 0.9rem;
+            border-left: 3px solid var(--primary);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Invoice Verification System</h1>
+        
+        <div class="upload-container" id="dropZone">
+            <div class="upload-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                </svg>
+            </div>
+            <h3>Upload Invoice Image</h3>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Drag & drop your invoice file or click to browse</p>
+            
+            <form id="uploadForm">
+                <input type="file" id="fileInput" class="file-input" accept="image/*" required>
+                <label for="fileInput" class="upload-btn">Choose File</label>
+                <div id="fileName" class="file-name"></div>
+                <button type="button" id="verifyBtn" class="upload-btn" style="margin-top: 1rem;">Verify Invoice</button>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 0.5rem;">Verifying invoice...</p>
+        </div>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="result-header">
+                <div class="result-icon" id="resultIcon"></div>
+                <h3 class="result-title" id="resultTitle"></h3>
+            </div>
+            <p class="result-reason" id="resultReason"></p>
+            
+            <div class="text-fields" id="textFields" style="display: none;">
+                <h3>Extracted Text Fields</h3>
+                <div id="extractedText"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // File input handling
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const dropZone = document.getElementById('dropZone');
+        const loading = document.getElementById('loading');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultReason = document.getElementById('resultReason');
+        const resultIcon = document.getElementById('resultIcon');
+        const textFields = document.getElementById('textFields');
+        const extractedText = document.getElementById('extractedText');
+
+        // Handle file selection
+        fileInput.addEventListener('change', (e) => {
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+            }
+        });
+
+        // Drag and drop functionality
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#4361ee';
+            dropZone.style.backgroundColor = 'rgba(67, 97, 238, 0.05)';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#d1d5db';
+            dropZone.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#d1d5db';
+            dropZone.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                fileName.textContent = e.dataTransfer.files[0].name;
+            }
+        });
+
+        // Verify invoice
+        verifyBtn.addEventListener('click', () => {
+            if (!fileInput.files.length) {
+                alert('Please select a file first');
+                return;
+            }
+
+            // Show loading
+            loading.style.display = 'block';
+            resultContainer.classList.remove('show');
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            fetch('/verify', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading
+                loading.style.display = 'none';
+
+                // Reset result container
+                resultContainer.className = 'result-container';
+                resultContainer.style.display = 'block';
+
+                if (data.error) {
+                    // Show error
+                    resultContainer.classList.add('error');
+                    resultIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>';
+                    resultTitle.textContent = 'Error';
+                    resultReason.textContent = data.error;
+                    textFields.style.display = 'none';
+                } else {
+                    // Show result
+                    if (data.result === 'Original') {
+                        resultContainer.classList.add('original');
+                        resultIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/></svg>';
+                    } else {
+                        resultContainer.classList.add('fake');
+                        resultIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>';
+                    }
+
+                    resultTitle.textContent = data.result;
+                    resultReason.textContent = data.reason;
+
+                    // Show extracted text if available
+                    if (data.extracted_text && Object.keys(data.extracted_text).length > 0) {
+                        textFields.style.display = 'block';
+                        extractedText.innerHTML = '';
+                        
+                        for (const [text, coords] of Object.entries(data.extracted_text)) {
+                            const fieldDiv = document.createElement('div');
+                            fieldDiv.className = 'text-field';
+                            fieldDiv.textContent = `"${text}" (Position: X=${coords[0]}, Y=${coords[1]}, W=${coords[2]}, H=${coords[3]})`;
+                            extractedText.appendChild(fieldDiv);
+                        }
+                    } else {
+                        textFields.style.display = 'none';
+                    }
+                }
+
+                // Show result with animation
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                }, 10);
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                alert('An error occurred. Please try again.');
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
